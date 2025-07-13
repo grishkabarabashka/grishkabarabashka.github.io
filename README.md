@@ -92,6 +92,9 @@ sudo kubeadm init --apiserver-advertise-address 192.168.60.100 --control-plane-e
 Run join command from init output on worker nodes.
 This ends separate nodes installs and all other steps are executed either locally or on master node (you'll need kubectl configured)
 
+## K9s install
+Install locally on your machine or run on master node.
+
 ## Network layer (CNI) install (master node)
 Cilium is used as CNI
 ```
@@ -125,7 +128,31 @@ rm hubble-linux-${HUBBLE_ARCH}.tar.gz{,.sha256sum}
 ```
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.15.2/config/manifests/metallb-native.yaml
 ```
-
+Add .yaml to configure MetalLB and apply it:
+```
+### metallb-config.yaml
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: default
+  namespace: metallb-system
+spec:
+  addresses:
+  - 192.168.60.200-192.168.60.230
+  autoAssign: true
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: default
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - default
+```
+```
+kubectl apply -f metallb-config.yaml
+```
 ## Rancher install - WiP
 ```
 helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set crds.enabled=true
